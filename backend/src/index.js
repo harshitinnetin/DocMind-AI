@@ -27,9 +27,25 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
+// Build allowed origins: comma-separated FRONTEND_URL env var + local dev defaults
+const allowedOrigins = [
+  ...( process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+    : []
+  ),
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://docmindsai.vercel.app',  // always allow the production frontend
+];
+
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:5174'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`[CORS] Blocked origin: ${origin}`);
+    callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
