@@ -5,7 +5,7 @@ import { FileText, Search, Filter, Trash2, MessageSquare, Plus, CheckCircle, Clo
 import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
-import api from '../lib/api'
+import api, { BASE_URL } from '../lib/api'
 
 export default function Library() {
   const navigate = useNavigate()
@@ -108,7 +108,7 @@ export default function Library() {
                   <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => navigate(`/chat?doc=${doc.id}`)} disabled={doc.status !== 'READY'}>
                     <MessageSquare size={13} /> Chat
                   </button>
-                  <button className="btn-icon" onClick={() => window.open(`/api/documents/${doc.id}/file`, '_blank')} title="View PDF">
+                  <button className="btn-icon" onClick={() => window.open(`${BASE_URL}/documents/${doc.id}/file`, '_blank')} title="View PDF">
                     <ExternalLink size={15} />
                   </button>
                   <button className="btn-icon" onClick={() => deleteMutation.mutate(doc.id)} title="Delete document">

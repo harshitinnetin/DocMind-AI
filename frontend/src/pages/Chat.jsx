@@ -11,7 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
-import api from '../lib/api'
+import api, { BASE_URL } from '../lib/api'
 import { formatDistanceToNow } from 'date-fns'
 
 // ── Typing indicator ─────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ export default function Chat() {
       let endpoint, activeChatId
 
       if (currentChatId) {
-        endpoint = `/api/chat/${currentChatId}/message`
+        endpoint = `${BASE_URL}/chat/${currentChatId}/message`
         activeChatId = currentChatId
         const { stream, abort } = createSSEStream(endpoint, { message: msg, documentIds: selectedDocs })
         abortRef.current = abort
@@ -315,7 +315,7 @@ export default function Chat() {
 
       } else {
         // ⚡ New chat: unified /api/chat/send
-        const { stream, abort } = createSSEStream('/api/chat/send', {
+        const { stream, abort } = createSSEStream(`${BASE_URL}/chat/send`, {
           message: msg, documentIds: selectedDocs,
           title: msg.slice(0, 60),
         })

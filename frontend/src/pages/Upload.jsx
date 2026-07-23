@@ -5,7 +5,7 @@ import { Upload as UploadIcon, FileText, CheckCircle, XCircle, Loader2, Brain, E
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import api from '../lib/api'
+import api, { BASE_URL } from '../lib/api'
 import ThemeToggle from '../components/ThemeToggle'
 
 const steps = [
@@ -27,7 +27,7 @@ export default function Upload() {
       const form = new FormData()
       form.append('file', file)
       form.append('title', title || file.name.replace(/\.pdf$/i, ''))
-      return fetch('/api/documents/upload', {
+      return fetch(`${BASE_URL}/documents/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('docmind_token')}` },
         body: form,
