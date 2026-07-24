@@ -29,7 +29,7 @@ app.use(helmet({
 
 // Build allowed origins: comma-separated FRONTEND_URL env var + local dev defaults
 const allowedOrigins = [
-  ...( process.env.FRONTEND_URL
+  ...(process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
     : []
   ),
@@ -70,12 +70,12 @@ app.use(morgan(':method :url :status :response-time ms'));
 app.set('etag', 'strong');
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/api/auth',      authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/chat',      chatRoutes);
-app.use('/api/ai',        aiRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/admin',     adminRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -102,6 +102,28 @@ app.listen(PORT, () => {
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`⚡ Cache layer: enabled (profile 5m | chats/docs 30s | analytics 2m)`);
   console.log(`🛡️  Gateway: timeout 25s | ETag | gzip | rate-limit active`);
+
+  // ── Self-ping keep-alive (Render free tier) ───────────────────────────────
+  // Render spins down instances after 15 min of inactivity.
+  // We ping our own /health endpoint every 14 minutes to stay awake.
+  if (process.env.NODE_ENV === 'production') {
+    const SELF_URL = process.env.RENDER_EXTERNAL_URL
+      ? `${process.env.RENDER_EXTERNAL_URL}/health`
+      : `http://localhost:${PORT}/health`;
+
+    const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes
+
+    setInterval(async () => {
+      try {
+        const res = await fetch(SELF_URL);
+        console.log(`🏓 Keep-alive ping → ${SELF_URL} [${res.status}]`);
+      } catch (err) {
+        console.warn(`⚠️  Keep-alive ping failed: ${err.message}`);
+      }
+    }, PING_INTERVAL_MS);
+
+    console.log(`🏓 Keep-alive: pinging ${SELF_URL} every 14 min`);
+  }
 });
 
 export default app;
